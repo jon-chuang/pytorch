@@ -3640,6 +3640,7 @@ class ReproTests(torch._dynamo.test_case.TestCase):
     def test_setattr_requires_grad_graph_breaks(self):
         def fn(x):
             z = x + 4
+            x += 1
             x.requires_grad = True
             y = x * z
             return y

@@ -163,6 +163,26 @@ class BuiltinVariable(VariableTracker):
 
     @staticmethod
     @functools.lru_cache(None)
+    def _self_assigning_ops():
+        fns = {
+            operator.ipow,
+            operator.imul,
+            operator.imatmul,
+            operator.ifloordiv,
+            operator.itruediv,
+            operator.imod,
+            operator.iadd,
+            operator.isub,
+            operator.ilshift,
+            operator.irshift,
+            operator.iand,
+            operator.ixor,
+            operator.ior,
+        }
+        return fns
+
+    @staticmethod
+    @functools.lru_cache(None)
     def _binops():
         # function -> ([forward name, reverse name, in-place name], in-place op)
         fns = {
@@ -475,6 +495,10 @@ class BuiltinVariable(VariableTracker):
             args[0], variables.TensorVariable
         ):
             tensor_args = False
+
+        if self.fn in self._self_assigning_ops():
+            # propagate mutable local
+            options['mutable_local'] = args[0].mutable_local
 
         if (
             self.can_insert_in_graph()
